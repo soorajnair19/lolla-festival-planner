@@ -11,120 +11,145 @@ function DownloadButton({ day, name, containerId }) {
         const img = new Image()
         img.crossOrigin = 'anonymous'
         img.onload = resolve
-        img.onerror = resolve // Continue even if image fails
+        img.onerror = resolve
         img.src = window.location.origin + '/homeBackground.webp'
-        setTimeout(resolve, 500) // Fallback timeout
+        setTimeout(resolve, 500)
       })
 
-      // Get actual dimensions including all scrollable content
-      const rect = container.getBoundingClientRect()
-      const fullWidth = Math.max(container.scrollWidth, container.offsetWidth, rect.width)
-      const fullHeight = Math.max(container.scrollHeight, container.offsetHeight, rect.height)
+      // Store original scroll position
+      const originalScrollY = window.scrollY
+      const originalScrollX = window.scrollX
       
-      // Create a wrapper with background
+      // Scroll to top
+      window.scrollTo(0, 0)
+      
+      // Find all elements with overflow restrictions and store their original styles
+      const elementsToModify = []
+      const findAllElements = (el) => {
+        if (!el) return
+        const computed = window.getComputedStyle(el)
+        if (computed.overflow === 'hidden' || computed.overflow === 'auto' || computed.overflow === 'scroll' || 
+            computed.maxHeight !== 'none' || computed.height !== 'auto') {
+          elementsToModify.push({
+            element: el,
+            overflow: el.style.overflow,
+            maxHeight: el.style.maxHeight,
+            height: el.style.height,
+            width: el.style.width
+          })
+        }
+        Array.from(el.children || []).forEach(findAllElements)
+      }
+      findAllElements(container)
+      
+      // Temporarily remove all restrictions
+      elementsToModify.forEach(({ element }) => {
+        element.style.overflow = 'visible'
+        element.style.maxHeight = 'none'
+        if (element === container) {
+          element.style.height = 'auto'
+          element.style.width = 'auto'
+        }
+      })
+      
+      // Force reflow
+      void container.offsetHeight
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      // Get actual dimensions after expansion - ensure we get full scrollable width/height
+      const fullWidth = Math.max(
+        container.scrollWidth,
+        container.offsetWidth,
+        container.getBoundingClientRect().width
+      )
+      const fullHeight = Math.max(
+        container.scrollHeight,
+        container.offsetHeight,
+        container.getBoundingClientRect().height
+      )
+      
+      // Ensure container itself is fully expanded
+      container.style.width = fullWidth + 'px'
+      container.style.minWidth = fullWidth + 'px'
+      
+      // Wait for layout
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      // Recalculate after setting width
+      const finalWidth = Math.max(container.scrollWidth, fullWidth)
+      const finalHeight = Math.max(container.scrollHeight, fullHeight)
+      
+      // Create wrapper off-screen but visible to html-to-image
       const wrapper = document.createElement('div')
-      wrapper.style.position = 'fixed'
-      wrapper.style.left = '-9999px'
+      wrapper.style.position = 'absolute'
+      wrapper.style.left = '0'
       wrapper.style.top = '0'
-      wrapper.style.width = fullWidth + 'px'
-      wrapper.style.height = fullHeight + 'px'
+      wrapper.style.width = finalWidth + 'px'
+      wrapper.style.height = finalHeight + 'px'
       wrapper.style.backgroundImage = `url(${window.location.origin}/homeBackground.webp)`
       wrapper.style.backgroundSize = 'cover'
       wrapper.style.backgroundPosition = 'center'
       wrapper.style.backgroundRepeat = 'no-repeat'
       wrapper.style.backgroundColor = '#ffffff'
+      wrapper.style.zIndex = '99999'
       wrapper.style.overflow = 'visible'
       
       // Add overlay
       const overlay = document.createElement('div')
       overlay.style.position = 'absolute'
-      overlay.style.top = '0'
-      overlay.style.left = '0'
-      overlay.style.width = '100%'
-      overlay.style.height = '100%'
+      overlay.style.inset = '0'
       overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'
       overlay.style.pointerEvents = 'none'
       overlay.style.zIndex = '1'
       
-      // Clone container with all styles preserved
+      // Clone the expanded container
       const clonedContainer = container.cloneNode(true)
       clonedContainer.style.position = 'relative'
-      clonedContainer.style.width = fullWidth + 'px'
+      clonedContainer.style.width = finalWidth + 'px'
       clonedContainer.style.height = 'auto'
-      clonedContainer.style.minHeight = fullHeight + 'px'
       clonedContainer.style.margin = '0'
       clonedContainer.style.padding = '0'
       clonedContainer.style.background = 'transparent'
       clonedContainer.style.overflow = 'visible'
       
-      // Remove any max-height or overflow hidden that might clip content
-      const allChildren = clonedContainer.querySelectorAll('*')
-      allChildren.forEach((child) => {
-        const el = child
+      // Ensure cloned children also have no overflow
+      const removeOverflow = (el) => {
         if (el.style) {
-          if (el.style.maxHeight) el.style.maxHeight = 'none'
-          if (el.style.overflow === 'hidden') el.style.overflow = 'visible'
+          el.style.overflow = 'visible'
+          el.style.maxHeight = 'none'
         }
-      })
+        Array.from(el.children || []).forEach(removeOverflow)
+      }
+      removeOverflow(clonedContainer)
       
       wrapper.appendChild(overlay)
       wrapper.appendChild(clonedContainer)
       document.body.appendChild(wrapper)
 
-      // Wait for rendering and layout
       await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Capture the full content including scrollable areas
-      const contentCanvas = await toCanvas(clonedContainer, {
+      // Capture using toPng - let it calculate dimensions naturally
+      const dataUrl = await toPng(wrapper, {
         quality: 1.0,
         pixelRatio: 2,
         useCORS: true,
         cacheBust: true,
-        scrollX: 0,
-        scrollY: 0,
       })
 
-      // Get actual canvas dimensions
-      const contentWidth = contentCanvas.width
-      const contentHeight = contentCanvas.height
-
-      // Create final canvas with background
-      const finalCanvas = document.createElement('canvas')
-      finalCanvas.width = contentWidth
-      finalCanvas.height = contentHeight
-      const ctx = finalCanvas.getContext('2d')
-
-      // Draw background image
-      const bgImg = new Image()
-      bgImg.crossOrigin = 'anonymous'
-      await new Promise((resolve) => {
-        bgImg.onload = () => {
-          ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height)
-          // Draw overlay
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'
-          ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height)
-          // Draw content on top
-          ctx.drawImage(contentCanvas, 0, 0)
-          resolve()
-        }
-        bgImg.onerror = () => {
-          // Fallback: draw without background if image fails
-          ctx.fillStyle = '#ffffff'
-          ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height)
-          ctx.drawImage(contentCanvas, 0, 0)
-          resolve()
-        }
-        bgImg.src = window.location.origin + '/homeBackground.webp'
-        setTimeout(() => {
-          // Fallback timeout
-          ctx.fillStyle = '#ffffff'
-          ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height)
-          ctx.drawImage(contentCanvas, 0, 0)
-          resolve()
-        }, 1000)
+      // Restore original styles
+      container.style.width = ''
+      container.style.minWidth = ''
+      elementsToModify.forEach(({ element, overflow, maxHeight, height, width }) => {
+        element.style.overflow = overflow || ''
+        element.style.maxHeight = maxHeight || ''
+        element.style.height = height || ''
+        element.style.width = width || ''
       })
-
-      const dataUrl = finalCanvas.toDataURL('image/png', 1.0)
+      
+      // Restore scroll position
+      window.scrollTo(originalScrollX, originalScrollY)
+      
+      // Remove wrapper
       document.body.removeChild(wrapper)
 
       const link = document.createElement('a')
