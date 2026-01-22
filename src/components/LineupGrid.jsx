@@ -148,15 +148,13 @@ function LineupGrid({ day, data, toggleSelection, isSelected, currentDay }) {
                         >
                           <div className="p-2 md:p-3 h-full flex items-center">
                             {(() => {
-                              const isKenCarson = slot.artist.toUpperCase().includes('KEN CARSON')
                               const isGhalatFamily = slot.artist.toUpperCase().includes('GHALAT FAMILY')
-                              const needsWrap = isKenCarson
                               const displayName = isGhalatFamily && slot.artist.toUpperCase().endsWith('FAMILY')
                                 ? slot.artist.replace(/\s+FAMILY$/i, '...')
                                 : slot.artist
                               return (
-                                <div className={`flex items-center gap-1.5 w-full ${needsWrap ? 'flex-wrap' : 'flex-nowrap'}`}>
-                                  <span className={`${selected ? 'text-white' : dayColors.defaultCardText} text-[10px] md:text-xs font-semibold leading-tight flex-1 min-w-0 ${needsWrap ? 'break-words' : 'truncate'}`}>
+                                <div className="flex items-center gap-1.5 w-full flex-nowrap">
+                                  <span className={`${selected ? 'text-white' : dayColors.defaultCardText} text-[10px] md:text-xs font-semibold leading-tight flex-1 min-w-0 truncate`}>
                                     {displayName}
                                   </span>
                                   <span className={`${selected ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'} text-[9px] px-1.5 py-0.5 rounded flex-shrink-0 font-medium whitespace-nowrap`}>

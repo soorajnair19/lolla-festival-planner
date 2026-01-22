@@ -112,15 +112,60 @@ function DownloadButton({ day, name, containerId }) {
       clonedContainer.style.background = 'transparent'
       clonedContainer.style.overflow = 'visible'
       
-      // Ensure cloned children also have no overflow
+      // Ensure cloned children also have no overflow, but preserve text truncation
       const removeOverflow = (el) => {
         if (el.style) {
-          el.style.overflow = 'visible'
-          el.style.maxHeight = 'none'
+          // Check if element has truncate class - preserve its overflow for truncation
+          const hasTruncate = el.className && (el.className.includes('truncate') || el.className.includes('text-ellipsis'))
+          if (!hasTruncate) {
+            el.style.overflow = 'visible'
+            el.style.maxHeight = 'none'
+          } else {
+            // Ensure truncate styles are explicitly set
+            el.style.overflow = 'hidden'
+            el.style.textOverflow = 'ellipsis'
+            el.style.whiteSpace = 'nowrap'
+          }
         }
         Array.from(el.children || []).forEach(removeOverflow)
       }
       removeOverflow(clonedContainer)
+      
+      // Also ensure all artist name spans and their parent containers have proper truncation
+      const artistNameSpans = clonedContainer.querySelectorAll('span')
+      artistNameSpans.forEach(span => {
+        const hasTruncate = span.className && span.className.includes('truncate')
+        
+        // Apply truncation to all spans with truncate class
+        if (hasTruncate && span.style) {
+          span.style.overflow = 'hidden'
+          span.style.textOverflow = 'ellipsis'
+          span.style.whiteSpace = 'nowrap'
+          span.style.maxWidth = '100%'
+          
+          // Ensure parent flex container has width constraint
+          const parent = span.parentElement
+          if (parent && parent.style) {
+            if (!parent.style.width && !parent.style.maxWidth) {
+              const computedStyle = window.getComputedStyle(parent)
+              if (computedStyle.display === 'flex' || computedStyle.display === 'inline-flex') {
+                parent.style.width = '100%'
+                parent.style.minWidth = '0'
+              }
+            }
+          }
+        }
+      })
+      
+      // Ensure all button cards have proper width constraints
+      const artistCards = clonedContainer.querySelectorAll('button[class*="absolute"]')
+      artistCards.forEach(card => {
+        if (card.style) {
+          // Ensure cards don't expand beyond their container
+          card.style.maxWidth = '100%'
+          card.style.boxSizing = 'border-box'
+        }
+      })
       
       wrapper.appendChild(overlay)
       wrapper.appendChild(clonedContainer)
