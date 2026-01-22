@@ -153,11 +153,6 @@ function LineupGrid({ day, data, toggleSelection, isSelected, currentDay }) {
                                 {slot.time}
                               </span>
                             </div>
-                            {selected && (
-                              <div className="flex items-center justify-end mt-1">
-                                <span className="text-white text-base md:text-lg flex-shrink-0">✓</span>
-                              </div>
-                            )}
                           </div>
                         </button>
                       )
