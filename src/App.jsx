@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { lineupData } from './data/lineup'
 import DayTabs from './components/DayTabs'
 import NameInput from './components/NameInput'
@@ -108,6 +109,7 @@ function App() {
           containerId="lineup-container"
         />
       </div>
+      <SpeedInsights />
     </div>
   )
 }
