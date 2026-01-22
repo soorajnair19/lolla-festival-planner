@@ -3,9 +3,9 @@ import { useMemo } from 'react'
 function LineupGrid({ day, data, toggleSelection, isSelected, currentDay }) {
   const isDay1 = currentDay === 'day1'
   
-  // Timeline hours: 1:00 to 10:00
+  // Timeline hours: 1:00 to 9:00 (display only, timeline still spans to 10:00)
   const timelineHours = useMemo(() => {
-    return Array.from({ length: 10 }, (_, i) => i + 1)
+    return Array.from({ length: 9 }, (_, i) => i + 1)
   }, [])
 
   // Convert time string to minutes from 1:00 (e.g., "2:30" = 90 minutes)
@@ -64,14 +64,14 @@ function LineupGrid({ day, data, toggleSelection, isSelected, currentDay }) {
           <div className="flex">
             {/* Timeline Column */}
             <div 
-              className="w-20 md:w-24 flex-shrink-0 relative"
+              className="w-20 md:w-24 flex-shrink-0 relative rounded-l-xl overflow-hidden"
               style={{ backgroundColor: dayColors.timeline }}
             >
               <div className="sticky top-0">
                 <div className="h-16 md:h-20"></div> {/* Header spacer */}
                 <div className="relative h-[540px] md:h-[600px] overflow-hidden">
                   {timelineHours.map((hour) => {
-                    // Position each hour marker: 1:00 at 0%, 2:00 at 11.11%, ..., 10:00 at 100%
+                    // Position each hour marker: 1:00 at 0%, 2:00 at 11.11%, ..., 9:00 at 88.89% (10:00 would be at 100% but not displayed)
                     const positionPercent = ((hour - 1) / 9) * 100
                     return (
                       <div
@@ -92,8 +92,10 @@ function LineupGrid({ day, data, toggleSelection, isSelected, currentDay }) {
 
             {/* Stages */}
             <div className="flex-1 flex relative">
-              {data.map((stage, stageIdx) => (
-                <div key={stageIdx} className="flex-1 min-w-[150px] md:min-w-[200px] relative z-10">
+              {data.map((stage, stageIdx) => {
+                const isLastStage = stageIdx === data.length - 1
+                return (
+                <div key={stageIdx} className={`flex-1 min-w-[150px] md:min-w-[200px] relative z-10 ${isLastStage ? 'rounded-r-xl overflow-hidden' : ''}`}>
                   {/* Stage Header */}
                   <div 
                     className={`text-white px-2 md:px-4 py-3 md:py-4 text-center font-bold text-xs md:text-base h-16 md:h-20 flex items-center justify-center ${typeof dayColors.stageHeader === 'string' && dayColors.stageHeader.startsWith('#') ? '' : dayColors.stageHeader}`}
@@ -103,7 +105,7 @@ function LineupGrid({ day, data, toggleSelection, isSelected, currentDay }) {
                   </div>
                   
                   {/* Stage Slots Container */}
-                  <div className={`relative h-[540px] md:h-[600px] border-r border-gray-200 overflow-hidden ${isDay1 ? 'bg-teal-100' : 'bg-blue-100'}`}>
+                  <div className={`relative h-[540px] md:h-[600px] ${isLastStage ? '' : 'border-r border-gray-200'} overflow-hidden ${isDay1 ? 'bg-teal-100' : 'bg-blue-100'}`}>
                     {/* Hour marker lines */}
                     {timelineHours.map((hour) => {
                       const positionPercent = ((hour - 1) / 9) * 100
@@ -145,8 +147,8 @@ function LineupGrid({ day, data, toggleSelection, isSelected, currentDay }) {
                           }}
                         >
                           <div className="p-2 md:p-3 h-full flex flex-col justify-between">
-                            <div className="flex items-start gap-1.5 flex-wrap">
-                              <span className={`${selected ? 'text-white' : dayColors.defaultCardText} text-[10px] md:text-xs font-semibold leading-tight break-words flex-1 min-w-0`}>
+                            <div className="flex items-start gap-1.5 flex-nowrap w-full">
+                              <span className={`${selected ? 'text-white' : dayColors.defaultCardText} text-[10px] md:text-xs font-semibold leading-tight flex-1 min-w-0 truncate`}>
                                 {slot.artist}
                               </span>
                               <span className={`${selected ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'} text-[9px] px-1.5 py-0.5 rounded flex-shrink-0 font-medium whitespace-nowrap`}>
@@ -159,7 +161,8 @@ function LineupGrid({ day, data, toggleSelection, isSelected, currentDay }) {
                     })}
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
