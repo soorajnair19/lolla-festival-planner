@@ -1,0 +1,87 @@
+{
+  "day1": [
+    {
+      "stage": "BUDX",
+      "slots": [
+        { "time": "2:00-2:30", "artist": "SUNFLOWER TAPE MACHINE" },
+        { "time": "3:15-4:00", "artist": "STILL IN THERAPY" },
+        { "time": "4:45-5:30", "artist": "MOTHER MOTHER" },
+        { "time": "6:30-7:30", "artist": "OPIUM PRESENTS: KEN CARSON, DESTROY LONELY, HOMIXIDE GANG" },
+        { "time": "8:35-9:50", "artist": "PLAYBOI CARTI" }
+      ]
+    },
+    {
+      "stage": "H&M",
+      "slots": [
+        { "time": "2:30-3:15", "artist": "GAULEY BHAI" },
+        { "time": "4:00-4:45", "artist": "HOT MILK" },
+        { "time": "5:30-6:30", "artist": "FUJII KAZE" },
+        { "time": "7:30-8:30", "artist": "YUNGBLUD" }
+      ]
+    },
+    {
+      "stage": "ALTERNATIVE",
+      "slots": [
+        { "time": "2:30-3:00", "artist": "ROUNAK MAITI" },
+        { "time": "3:30-4:15", "artist": "ZOYA" },
+        { "time": "4:45-5:30", "artist": "ANKUR TEWARI & THE GHALAT FAMILY" },
+        { "time": "6:00-6:45", "artist": "PRITHVI PRESENTS" },
+        { "time": "7:20-8:20", "artist": "THE MIDNIGHT" }
+      ]
+    },
+    {
+      "stage": "PERRY'S X KEEP WALKING",
+      "slots": [
+        { "time": "2:00-2:45", "artist": "SIJYA" },
+        { "time": "3:00-3:45", "artist": "PHO" },
+        { "time": "4:15-5:00", "artist": "NATE08" },
+        { "time": "5:30-6:25", "artist": "MU540" },
+        { "time": "6:45-8:00", "artist": "HAMDI" },
+        { "time": "8:25-9:55", "artist": "KNOCK2" }
+      ]
+    }
+  ],
+  "day2": [
+    {
+      "stage": "BUDX",
+      "slots": [
+        { "time": "1:45-2:15", "artist": "TRANCE EFFECT" },
+        { "time": "2:45-3:30", "artist": "OAFF X SAVERA" },
+        { "time": "4:15-5:00", "artist": "CALUM SCOTT" },
+        { "time": "5:50-6:50", "artist": "BLOODYWOOD" },
+        { "time": "7:55-9:55", "artist": "LINKIN PARK" }
+      ]
+    },
+    {
+      "stage": "H&M",
+      "slots": [
+        { "time": "2:15-2:45", "artist": "GINI" },
+        { "time": "3:30-4:15", "artist": "SEN" },
+        { "time": "5:00-5:50", "artist": "NUBIYAN TWIST" },
+        { "time": "6:50-7:50", "artist": "KEHLANI" }
+      ]
+    },
+    {
+      "stage": "ALTERNATIVE",
+      "slots": [
+        { "time": "1:45-2:30", "artist": "TOLOU" },
+        { "time": "3:00-3:45", "artist": "ZOKOVA" },
+        { "time": "4:15-5:00", "artist": "PACIFIST" },
+        { "time": "5:30-6:15", "artist": "KARSH KALE" },
+        { "time": "6:50-7:50", "artist": "LANY" }
+      ]
+    },
+    {
+      "stage": "PERRY'S X KEEP WALKING",
+      "slots": [
+        { "time": "1:30-2:00", "artist": "RUDY MUKTA" },
+        { "time": "2:15-3:00", "artist": "EXCISE DEPT" },
+        { "time": "3:15-4:00", "artist": "MXRCI" },
+        { "time": "4:15-5:15", "artist": "BUNT." },
+        { "time": "5:30-6:30", "artist": "BAALTI" },
+        { "time": "6:50-8:00", "artist": "SAMMY VIRJI" },
+        { "time": "8:30-9:45", "artist": "NUCLEYA" }
+      ]
+    }
+  ]
+}
