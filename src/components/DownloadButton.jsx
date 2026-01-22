@@ -16,22 +16,24 @@ function DownloadButton({ day, name, containerId }) {
         setTimeout(resolve, 500) // Fallback timeout
       })
 
-      // Get the parent element that has the background
-      const parentWithBackground = container.closest('[style*="backgroundImage"]') || 
-                                   document.querySelector('[style*="homeBackground"]')
+      // Get actual dimensions including all scrollable content
+      const rect = container.getBoundingClientRect()
+      const fullWidth = Math.max(container.scrollWidth, container.offsetWidth, rect.width)
+      const fullHeight = Math.max(container.scrollHeight, container.offsetHeight, rect.height)
       
       // Create a wrapper with background
       const wrapper = document.createElement('div')
-      wrapper.style.position = 'absolute'
+      wrapper.style.position = 'fixed'
       wrapper.style.left = '-9999px'
       wrapper.style.top = '0'
-      wrapper.style.width = container.scrollWidth + 'px'
-      wrapper.style.height = container.scrollHeight + 'px'
+      wrapper.style.width = fullWidth + 'px'
+      wrapper.style.height = fullHeight + 'px'
       wrapper.style.backgroundImage = `url(${window.location.origin}/homeBackground.webp)`
       wrapper.style.backgroundSize = 'cover'
       wrapper.style.backgroundPosition = 'center'
       wrapper.style.backgroundRepeat = 'no-repeat'
       wrapper.style.backgroundColor = '#ffffff'
+      wrapper.style.overflow = 'visible'
       
       // Add overlay
       const overlay = document.createElement('div')
@@ -44,56 +46,80 @@ function DownloadButton({ day, name, containerId }) {
       overlay.style.pointerEvents = 'none'
       overlay.style.zIndex = '1'
       
-      // Clone container
+      // Clone container with all styles preserved
       const clonedContainer = container.cloneNode(true)
       clonedContainer.style.position = 'relative'
-      clonedContainer.style.width = '100%'
-      clonedContainer.style.height = '100%'
+      clonedContainer.style.width = fullWidth + 'px'
+      clonedContainer.style.height = 'auto'
+      clonedContainer.style.minHeight = fullHeight + 'px'
       clonedContainer.style.margin = '0'
       clonedContainer.style.padding = '0'
       clonedContainer.style.background = 'transparent'
+      clonedContainer.style.overflow = 'visible'
+      
+      // Remove any max-height or overflow hidden that might clip content
+      const allChildren = clonedContainer.querySelectorAll('*')
+      allChildren.forEach((child) => {
+        const el = child
+        if (el.style) {
+          if (el.style.maxHeight) el.style.maxHeight = 'none'
+          if (el.style.overflow === 'hidden') el.style.overflow = 'visible'
+        }
+      })
       
       wrapper.appendChild(overlay)
       wrapper.appendChild(clonedContainer)
       document.body.appendChild(wrapper)
 
-      // Wait for rendering and background to load
-      await new Promise(resolve => setTimeout(resolve, 300))
+      // Wait for rendering and layout
+      await new Promise(resolve => setTimeout(resolve, 500))
 
-      // First capture the content
+      // Capture the full content including scrollable areas
       const contentCanvas = await toCanvas(clonedContainer, {
         quality: 1.0,
         pixelRatio: 2,
         useCORS: true,
         cacheBust: true,
+        scrollX: 0,
+        scrollY: 0,
       })
+
+      // Get actual canvas dimensions
+      const contentWidth = contentCanvas.width
+      const contentHeight = contentCanvas.height
 
       // Create final canvas with background
       const finalCanvas = document.createElement('canvas')
-      finalCanvas.width = wrapper.offsetWidth * 2
-      finalCanvas.height = wrapper.offsetHeight * 2
+      finalCanvas.width = contentWidth
+      finalCanvas.height = contentHeight
       const ctx = finalCanvas.getContext('2d')
 
       // Draw background image
       const bgImg = new Image()
       bgImg.crossOrigin = 'anonymous'
-      await new Promise((resolve, reject) => {
+      await new Promise((resolve) => {
         bgImg.onload = () => {
           ctx.drawImage(bgImg, 0, 0, finalCanvas.width, finalCanvas.height)
           // Draw overlay
           ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'
           ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height)
           // Draw content on top
-          ctx.drawImage(contentCanvas, 0, 0, finalCanvas.width, finalCanvas.height)
+          ctx.drawImage(contentCanvas, 0, 0)
           resolve()
         }
-        bgImg.onerror = reject
-        bgImg.src = window.location.origin + '/homeBackground.webp'
-        setTimeout(() => {
+        bgImg.onerror = () => {
           // Fallback: draw without background if image fails
           ctx.fillStyle = '#ffffff'
           ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height)
-          ctx.drawImage(contentCanvas, 0, 0, finalCanvas.width, finalCanvas.height)
+          ctx.drawImage(contentCanvas, 0, 0)
+          resolve()
+        }
+        bgImg.src = window.location.origin + '/homeBackground.webp'
+        setTimeout(() => {
+          // Fallback timeout
+          ctx.fillStyle = '#ffffff'
+          ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height)
+          ctx.drawImage(contentCanvas, 0, 0)
           resolve()
         }, 1000)
       })
