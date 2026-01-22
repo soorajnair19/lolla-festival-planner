@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
+import { Analytics } from '@vercel/analytics/react'
 import { lineupData } from './data/lineup'
 import DayTabs from './components/DayTabs'
 import NameInput from './components/NameInput'
@@ -110,6 +111,7 @@ function App() {
         />
       </div>
       <SpeedInsights />
+      <Analytics />
     </div>
   )
 }
